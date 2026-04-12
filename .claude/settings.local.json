@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rtk claude:*)",
+      "Bash(claude mcp:*)",
+      "Bash(claude restart:*)",
+      "mcp__flowyteam__leave",
+      "Bash(rtk read:*)",
+      "Bash(rtk grep:*)",
+      "mcp__flowyteam__employees",
+      "Bash(python3:*)",
+      "Bash(node:*)"
+    ]
+  }
+}
