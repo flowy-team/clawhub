@@ -1,14 +1,16 @@
 ---
 name: flowyteam
-version: 1.0.0
-description: Manage FlowyTeam projects, tasks, OKRs, KPIs, HR, CRM, finance, support tickets, attendance, and more via MCP — 31 tools covering the full FlowyTeam workspace.
+version: 1.1.0
+description: Manage FlowyTeam projects, tasks, OKRs, KPIs, HR, CRM, finance, support tickets, attendance, and more via MCP — 33 tools including auth_register and auth_login for zero-token bootstrap.
 license: MIT
 author: flowyteam
 metadata:
-  openclaw:
+  clawhub:
     requires:
       env:
-        - FLOWYTEAM_API_TOKEN
+        - name: FLOWYTEAM_API_TOKEN
+          description: "API token from FlowyTeam Settings → MCP & AI Integration. Optional if using the zero-token bootstrap via auth_login / auth_register."
+          required: false
 ---
 
 # FlowyTeam MCP
@@ -23,15 +25,42 @@ productivity and performance management. 7,000+ organizations, 140+ countries.
 
 ---
 
+## Endpoints
+
+| Endpoint | Auth | Purpose |
+|---|---|---|
+| `POST /api/mcp/gateway` | None (per-call) | **Gateway** — single URL for everything; `auth_register` & `auth_login` run without token, all other tools read Bearer from header |
+| `POST /api/v2/mcp/rpc` | Bearer token | **RPC** — authenticated-only endpoint for all 31 workspace tools |
+
+---
+
 ## Setup
 
-### Claude Code (CLI)
+### Option A — Existing account (direct connect)
 
 ```bash
 claude mcp add flowyteam \
   --transport http \
   --url https://flowyteam.com/api/v2/mcp/rpc \
   --header "Authorization: Bearer $FLOWYTEAM_API_TOKEN"
+```
+
+Get your token: FlowyTeam → **Settings → MCP & AI Integration** → copy token.
+
+### Option B — Zero-token bootstrap via Gateway
+
+```bash
+# Step 1: connect without token
+claude mcp add flowyteam \
+  --transport http \
+  --url https://flowyteam.com/api/mcp/gateway
+
+# Step 2: ask Claude to register or login (Claude calls auth_register or auth_login)
+# Step 3: reconnect with the returned token
+claude mcp add flowyteam \
+  --transport http \
+  --url https://flowyteam.com/api/mcp/gateway \
+  --header "Authorization: Bearer TOKEN_FROM_LOGIN"
 ```
 
 ### Claude Desktop / Cursor (`mcp.json`)
@@ -50,22 +79,17 @@ claude mcp add flowyteam \
 }
 ```
 
-### Get Your API Token
-
-1. Log in to FlowyTeam → **Settings → API Token**
-2. Generate or copy your existing token
-3. Use as `FLOWYTEAM_API_TOKEN`
-
 ---
 
 ## Protocol
 
-- **Endpoint:** `POST https://flowyteam.com/api/v2/mcp/rpc`
+- **Gateway:** `POST https://flowyteam.com/api/mcp/gateway`
+- **RPC:** `POST https://flowyteam.com/api/v2/mcp/rpc`
 - **Transport:** Streamable HTTP (JSON-RPC 2.0)
-- **Auth:** `Authorization: Bearer <api_token>`
+- **Auth:** `Authorization: Bearer <api_token>` (not required for `auth_register` / `auth_login`)
 - **Protocol Version:** `2024-11-05`
 
-All tools share a `method` parameter to select the HTTP verb:
+All workspace tools share a `method` parameter to select the HTTP verb:
 
 | `method` | Operation |
 |---|---|
@@ -74,13 +98,96 @@ All tools share a `method` parameter to select the HTTP verb:
 | `PUT` | Update an existing record |
 | `DELETE` | Delete a record |
 
----
-
-## Tools (31)
+Auth tools (`auth_register`, `auth_login`) only use `POST` and do not need a `method` field.
 
 ---
 
-### 1. `tasks`
+## Tools (33)
+
+---
+
+### 0a. `auth_register` *(public — no token required)*
+
+**Register a new FlowyTeam company + admin user account**
+
+Methods: `POST` only
+
+Available via Gateway endpoint (`/api/mcp/gateway`) when the platform admin has enabled MCP registration (`allow_mcp_registration = true`). Email verification is skipped — account is active and token is returned immediately.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `name` | string | ✓ | Full name of the admin user |
+| `email` | string | ✓ | Email address (used as login credential) |
+| `password` | string | ✓ | Password (minimum 8 characters) |
+| `company_name` | string | ✓ | Name of the company / organisation |
+| `phone` | string | — | Phone number (optional) |
+
+**Example:**
+
+```json
+{
+  "name": "Alice Smith",
+  "email": "alice@acme.com",
+  "password": "secret123",
+  "company_name": "Acme Corp"
+}
+```
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "message": "Account created successfully. Use the api_token as your Bearer token for all MCP calls.",
+  "api_token": "abc123xyz...",
+  "user_id": 42,
+  "company_id": 7,
+  "name": "Alice Smith",
+  "email": "alice@acme.com"
+}
+```
+
+---
+
+### 0b. `auth_login` *(public — no token required)*
+
+**Login to an existing FlowyTeam account**
+
+Methods: `POST` only
+
+Available via both Gateway (`/api/mcp/gateway`) and can be called without a token. Returns the `api_token` stored on the user's profile; regenerates it automatically if missing.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `email` | string | ✓ | Registered email address |
+| `password` | string | ✓ | Account password |
+
+**Example:**
+
+```json
+{
+  "email": "alice@acme.com",
+  "password": "secret123"
+}
+```
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "message": "Login successful. Use the api_token as your Bearer token for all MCP calls.",
+  "api_token": "abc123xyz...",
+  "user_id": 42,
+  "company_id": 7,
+  "name": "Alice Smith",
+  "email": "alice@acme.com"
+}
+```
+
+---
+
+### 1. `tasks` *(requires Bearer token)*
 
 **Manage tasks and assignments**
 
@@ -1397,4 +1504,4 @@ Once connected, you can ask Claude:
 - **Website:** [flowyteam.com](https://flowyteam.com)
 - **MCP Docs:** [flowyteam.com/get/mcp-server](https://flowyteam.com/get/mcp-server)
 - **API Reference:** [flowyteam.com/get/mcp-docs](https://flowyteam.com/get/mcp-docs)
-- **Sign Up:** [app.flowyteam.com/register](https://app.flowyteam.com/register)
+- **Sign Up:** [app.flowyteam.com/register](https://flowyteam.com/register)
