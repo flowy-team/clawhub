@@ -10,7 +10,7 @@ ClawhHub is a registry for installing and managing MCP (Model Context Protocol) 
 
 | Skill | Version | Description |
 |---|---|---|
-| [flowyteam-mcp](skills/flowyteam-mcp/) | 1.1.0 | Manage FlowyTeam projects, tasks, OKRs, KPIs, HR, CRM, finance, and more via MCP |
+| [flowyteam-mcp](skills/flowyteam-mcp/) | 1.1.1 | Manage FlowyTeam projects, tasks, OKRs, KPIs, HR, CRM, finance, and more via MCP |
 
 ## Installing a Skill
 
