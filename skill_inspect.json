@@ -1,0 +1,216 @@
+{
+  "skill": {
+    "slug": "flowyteam-mcp",
+    "displayName": "Flowyteam Mcp",
+    "summary": "Manage FlowyTeam projects, tasks, OKRs, KPIs, HR, CRM, finance, support tickets, attendance, and more via MCP — 34 tools for complete workspace management.",
+    "tags": {
+      "latest": "1.1.4"
+    },
+    "stats": {
+      "comments": 0,
+      "downloads": 218,
+      "installsAllTime": 2,
+      "installsCurrent": 2,
+      "stars": 0,
+      "versions": 8
+    },
+    "createdAt": 1775993194498,
+    "updatedAt": 1777868807328
+  },
+  "latestVersion": {
+    "version": "1.1.4",
+    "createdAt": 1777868641401,
+    "changelog": "flowyteam-mcp 1.1.4\n\n- Documentation updated: The \"password\" field for creating employees is now marked as optional in SKILL.md.\n- Example JSON for employee creation clarifies that new employees set their own password on first login.\n- No functional or API changes; documentation improvements only.",
+    "license": "MIT-0"
+  },
+  "owner": {
+    "handle": "flowy-team",
+    "userId": "s17fp5j70snzm5yz1p6wm2fg9585t8nb",
+    "displayName": "flowy-team",
+    "image": "https://avatars.githubusercontent.com/u/224688828?v=4"
+  },
+  "version": {
+    "version": "1.1.4",
+    "createdAt": 1777868641401,
+    "changelog": "flowyteam-mcp 1.1.4\n\n- Documentation updated: The \"password\" field for creating employees is now marked as optional in SKILL.md.\n- Example JSON for employee creation clarifies that new employees set their own password on first login.\n- No functional or API changes; documentation improvements only.",
+    "changelogSource": "auto",
+    "license": "MIT-0",
+    "files": [
+      {
+        "path": "README.md",
+        "size": 11556,
+        "sha256": "a7aa8a65614284c6fc4f3ffc0438c7d8c255206ce225a0e6586e28e14800132a",
+        "contentType": "text/markdown"
+      },
+      {
+        "path": "SKILL.md",
+        "size": 46603,
+        "sha256": "7e18120276e7316c236546853888f9ac66238765e75826e0759190d5f981b40c",
+        "contentType": "text/markdown"
+      },
+      {
+        "path": "_meta.json",
+        "size": 132,
+        "sha256": "f4c133f04d0009f7da90bd81d7c069c7ff3b34ee0762d5809d05d233d967f187",
+        "contentType": "application/json"
+      }
+    ],
+    "security": {
+      "status": "suspicious",
+      "hasWarnings": true,
+      "checkedAt": 1777868807079,
+      "model": "gpt-5.5",
+      "hasScanResult": true,
+      "sha256hash": "f1bd120ec3e490635eca5f2ac9fea9355b95843a5c876940e6b539d26927bbf9",
+      "virustotalUrl": "https://www.virustotal.com/gui/file/f1bd120ec3e490635eca5f2ac9fea9355b95843a5c876940e6b539d26927bbf9",
+      "capabilityTags": [
+        "crypto",
+        "can-make-purchases",
+        "requires-oauth-token",
+        "requires-sensitive-credentials"
+      ],
+      "scanners": {
+        "static": {
+          "status": "clean",
+          "normalizedStatus": "clean",
+          "reasonCodes": [],
+          "summary": "No suspicious patterns detected.",
+          "engineVersion": "v2.4.22",
+          "checkedAt": 1777868641975
+        },
+        "vt": {
+          "status": "clean",
+          "verdict": "benign",
+          "normalizedStatus": "clean",
+          "analysis": "Type: OpenClaw Skill\nName: flowyteam-mcp\nVersion: 1.1.4\n\nThe flowyteam-mcp skill bundle provides a comprehensive Model Context Protocol (MCP) interface for the FlowyTeam business management platform. It defines 34 tools for managing tasks, OKRs, HR, and financial records via official endpoints at flowyteam.com. While the bundle includes sensitive authentication tools (auth_login, auth_register), the SKILL.md file contains explicit instructions for the AI agent to only invoke these tools upon direct user request, and the overall functionality is well-documented and aligned with the stated purpose of workspace management.",
+          "source": "palm",
+          "checkedAt": 1777868807079
+        },
+        "llm": {
+          "status": "suspicious",
+          "verdict": "suspicious",
+          "normalizedStatus": "suspicious",
+          "confidence": "high",
+          "summary": "This appears to be a legitimate FlowyTeam connector, but it gives an AI agent broad token-based power to read, create, update, and delete sensitive business, HR, and finance records.",
+          "dimensions": [
+            {
+              "detail": "The tools match the stated purpose of managing a FlowyTeam workspace, but the purpose itself is very broad and includes high-impact HR, CRM, finance, attendance, contracts, invoices, expenses, notices, and deletion capabilities.",
+              "label": "Purpose & Capability",
+              "name": "purpose_capability",
+              "rating": "concern"
+            },
+            {
+              "detail": "The documentation exposes full CRUD operations, including DELETE, but does not document mandatory user confirmation, scoping, rollback, or safe-mode boundaries for destructive or financial/HR actions.",
+              "label": "Instruction Scope",
+              "name": "instruction_scope",
+              "rating": "concern"
+            },
+            {
+              "detail": "This is an instruction-only skill that connects to a disclosed remote HTTPS MCP endpoint; however, package/version/owner metadata is inconsistent across the supplied registry metadata and included _meta.json.",
+              "label": "Install Mechanism",
+              "name": "install_mechanism",
+              "rating": "note"
+            },
+            {
+              "detail": "An API token can grant workspace-wide business authority, and the README states admin users have full read/write access to all tools.",
+              "label": "Credentials",
+              "name": "environment_proportionality",
+              "rating": "concern"
+            },
+            {
+              "detail": "The skill requires a Bearer API token and also documents logging in through Claude with an email and password to receive an api_token; this is expected for the integration but is sensitive and high privilege.",
+              "label": "Persistence & Privilege",
+              "name": "persistence_privilege",
+              "rating": "concern"
+            }
+          ],
+          "guidance": "Review this carefully before installing. It is appropriate only if you want an AI agent to manage substantial parts of your FlowyTeam workspace. Use the least-privileged token possible, avoid sharing your password in chat when an API token can be generated directly, and require manual confirmation for deletes, financial records, HR records, contracts, invoices, expenses, and public notices.",
+          "findings": null,
+          "agenticRiskFindings": [
+            {
+              "categoryId": "ASI02",
+              "categoryLabel": "Tool Misuse and Exploitation",
+              "confidence": "high",
+              "evidence": {
+                "explanation": "The skill exposes create, update, and delete operations over HR and financial/business records. The artifacts do not describe explicit confirmation, rollback, or scoped approval requirements for these high-impact mutations.",
+                "path": "README.md",
+                "snippet": "`employees` | Manage employees and team members | GET POST PUT DELETE ... `invoices` | Manage client invoices | GET POST PUT DELETE ... `expenses` | Manage expenses and claims | GET POST PUT DELETE"
+              },
+              "recommendation": "Use a least-privileged FlowyTeam account or token where possible, require manual approval for POST/PUT/DELETE actions, and avoid enabling broad admin access unless you are comfortable reviewing each action.",
+              "riskBucket": "abnormal_behavior_control",
+              "severity": "high",
+              "status": "concern",
+              "userImpact": "If the agent misunderstands a request or is prompted badly, it could change or delete important workspace, employee, customer, invoice, expense, or contract records."
+            },
+            {
+              "categoryId": "ASI03",
+              "categoryLabel": "Identity and Privilege Abuse",
+              "confidence": "high",
+              "evidence": {
+                "explanation": "The skill instructs users to provide account credentials through the agent and can return a token that may have full admin read/write authority.",
+                "path": "README.md",
+                "snippet": "\"Login to FlowyTeam with email alice@acme.com and password secret123\" ... Claude calls `auth_login` \u001a returns `api_token` ... **Admin** | Full read/write access to all tools"
+              },
+              "recommendation": "Prefer generating an API token directly in FlowyTeam settings instead of typing your password into chat, use non-admin or least-privileged accounts where possible, and rotate/revoke tokens if exposed.",
+              "riskBucket": "permission_boundary",
+              "severity": "high",
+              "status": "concern",
+              "userImpact": "A compromised, over-privileged, or mishandled token could allow broad access to the user's FlowyTeam workspace, including sensitive business and personnel data."
+            },
+            {
+              "categoryId": "ASI04",
+              "categoryLabel": "Agentic Supply Chain Vulnerabilities",
+              "confidence": "medium",
+              "evidence": {
+                "explanation": "The included package metadata does not match the supplied registry metadata, which lists a different owner ID and version 1.1.4. This is a provenance consistency issue, especially for a credential-bearing connector.",
+                "path": "_meta.json",
+                "snippet": "\"ownerId\": \"kn7bszbtxv4fztp08smfhjdts584p2ns\", \"slug\": \"flowyteam-mcp\", \"version\": \"1.1.1\""
+              },
+              "recommendation": "Verify the publisher, source repository, and current package version before installing or granting credentials.",
+              "riskBucket": "abnormal_behavior_control",
+              "severity": "low",
+              "status": "note",
+              "userImpact": "Metadata mismatches can make it harder to confirm exactly which package version and publisher you are installing."
+            },
+            {
+              "categoryId": "ASI07",
+              "categoryLabel": "Insecure Inter-Agent Communication",
+              "confidence": "high",
+              "evidence": {
+                "explanation": "The skill routes agent actions and workspace data through a remote MCP endpoint using a Bearer token. This is disclosed and purpose-aligned, but it is a sensitive data boundary users should understand.",
+                "path": "README.md",
+                "snippet": "This skill connects Claude Code (or any MCP client) to your FlowyTeam workspace via a remote HTTP MCP server ... `POST /api/v2/mcp/rpc` | Bearer token"
+              },
+              "recommendation": "Install only if you trust FlowyTeam's MCP service with the relevant workspace data and configure tokens according to your organization's security policy.",
+              "riskBucket": "sensitive_data_protection",
+              "severity": "medium",
+              "status": "note",
+              "userImpact": "Workspace data, prompts describing business actions, and authentication headers are sent to the FlowyTeam MCP service as part of normal use."
+            }
+          ],
+          "riskSummary": {
+            "abnormal_behavior_control": {
+              "highestSeverity": "high",
+              "status": "concern",
+              "summary": "The skill exposes broad create/update/delete authority over many business modules, including HR and finance, and has a minor package metadata provenance mismatch."
+            },
+            "permission_boundary": {
+              "highestSeverity": "high",
+              "status": "concern",
+              "summary": "The skill requires sensitive FlowyTeam authentication and may use a token with full admin read/write authority."
+            },
+            "sensitive_data_protection": {
+              "highestSeverity": "medium",
+              "status": "note",
+              "summary": "Sensitive workspace data and authenticated requests are sent to the disclosed remote FlowyTeam MCP endpoint."
+            }
+          },
+          "model": "gpt-5.5",
+          "checkedAt": 1777868724588
+        }
+      }
+    }
+  },
+  "versions": null,
+  "file": null
+}

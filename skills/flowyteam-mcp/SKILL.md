@@ -1,6 +1,6 @@
 ---
 name: flowyteam
-version: "1.1.1"
+version: "1.1.5"
 description: Manage FlowyTeam projects, tasks, OKRs, KPIs, HR, CRM, finance, support tickets, attendance, and more via MCP — 34 tools for complete workspace management.
 license: MIT
 author: flowyteam
@@ -31,7 +31,7 @@ productivity and performance management. 7,000+ organizations, 140+ countries.
 
 | Endpoint | Auth | Purpose |
 |---|---|---|
-| `POST /api/mcp/gateway` | None (per-call) | **Gateway** — single URL for everything; `auth_register`, `auth_verify_email` & `auth_login` run without token, all other tools read Bearer from header |
+| `POST /api/mcp/gateway` | None (per-call) | **Gateway** — `auth_register` & `auth_verify_email` run without token for new account setup; all other tools read Bearer from header |
 | `POST /api/v2/mcp/rpc` | Bearer token | **RPC** — authenticated-only endpoint for all 31 workspace tools |
 
 ---
@@ -72,7 +72,7 @@ Get your token: FlowyTeam → **Settings → MCP & AI Integration** → copy tok
 - **Gateway:** `POST https://flowyteam.com/api/mcp/gateway`
 - **RPC:** `POST https://flowyteam.com/api/v2/mcp/rpc`
 - **Transport:** Streamable HTTP (JSON-RPC 2.0)
-- **Auth:** `Authorization: Bearer <api_token>` (not required for `auth_register` / `auth_verify_email` / `auth_login`)
+- **Auth:** `Authorization: Bearer <api_token>` (not required for `auth_register` / `auth_verify_email`)
 - **Protocol Version:** `2024-11-05`
 
 All workspace tools share a `method` parameter to select the HTTP verb:
@@ -84,7 +84,18 @@ All workspace tools share a `method` parameter to select the HTTP verb:
 | `PUT` | Update an existing record |
 | `DELETE` | Delete a record |
 
-Auth tools (`auth_register`, `auth_verify_email`, `auth_login`) only use `POST` and do not need a `method` field.
+Account setup tools (`auth_register`, `auth_verify_email`) only use `POST` and do not need a `method` field.
+
+---
+
+## Safety Guidelines
+
+> **Important:** This skill has broad read and write access to your FlowyTeam workspace.
+
+- **Use a limited-permission token.** Avoid connecting an admin account unless you specifically need admin operations.
+- **Confirm before mutating.** Always ask the user to confirm before executing any `POST` (create), `PUT` (update), or `DELETE` operation — especially on sensitive data: employees, HR records, contracts, invoices, expenses, notices, and client data.
+- **Never act autonomously.** Do not perform any create, update, or delete action unless the user has explicitly requested it in the current turn.
+- **Prefer read-first.** When intent is ambiguous, default to `GET` to show the user what exists before offering to change it.
 
 ---
 
@@ -185,7 +196,7 @@ Methods: `GET` `POST` `PUT` `DELETE`
 | `id` | integer \| string | Employee ID — required for PUT / DELETE |
 | `name` | string | Full name — required for POST |
 | `email` | string | Email — required for POST |
-| `password` | string | Password — required for POST |
+| `password` | string | Optional — new employee sets their own on first login |
 | `department_id` | integer \| string | Department ID |
 | `designation_id` | integer \| string | Job designation ID |
 | `employee_id` | string | Custom employee ID/code |
@@ -199,9 +210,9 @@ Methods: `GET` `POST` `PUT` `DELETE`
 // GET — list active employees in department 4
 { "method": "GET", "department_id": 4, "status": "active" }
 
-// POST — create employee
+// POST — create employee (password is set by the new employee on first login)
 { "method": "POST", "name": "John Doe", "email": "john@company.com",
-  "password": "secret123", "department_id": 4, "designation_id": 2,
+  "department_id": 4, "designation_id": 2,
   "joining_date": "2026-06-01" }
 
 // PUT — deactivate
@@ -1351,55 +1362,36 @@ Methods: `GET` `POST` `PUT` `DELETE`
 
 ---
 
-## Advanced: Account Tools (Gateway endpoint only)
+## Account Setup (no API token yet?)
 
-> These tools are available only via `https://flowyteam.com/api/mcp/gateway` and **must only be invoked when the user explicitly requests it** — never autonomously. After obtaining a token, reconfigure the MCP connection using the [Recommended setup](#recommended--connect-with-api-token) above.
+**Existing account:** Go to FlowyTeam → **Settings → MCP & AI Integration** → copy your API token, then use the [Recommended setup](#recommended--connect-with-api-token) above.
+
+**New account:** Use `auth_register` + `auth_verify_email` below. Both tools are available via `https://flowyteam.com/api/mcp/gateway` without a token, and **must only be invoked when the user explicitly requests it** — never autonomously.
 
 ### `auth_register`
 
 **Create a new FlowyTeam company account.**
-Call only when the user explicitly requests to create a new account and provides all required details. Requires `allow_mcp_registration = true` on the FlowyTeam instance.
-
-A verification email is sent — the account must be verified before it can be used. Two paths to complete verification:
-
-- **Path A (CLI):** Copy the code from the verification email link URL and call `auth_verify_email` → receive `api_token` immediately.
-- **Path B (browser):** Click the verification link in the email, then call `auth_login` with email + password → receive `api_token`.
+Call only when the user explicitly requests account creation. A verification email with a 6-digit code is sent immediately. No setup password needed — one is generated and delivered via the verification email.
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
 | `name` | string | ✓ | Full name of the admin user |
 | `email` | string | ✓ | Email address |
-| `password` | string | ✓ | Password (minimum 8 characters) |
 | `company_name` | string | ✓ | Company / organisation name |
-| `phone` | string | — | Phone number (optional) |
+| `phone` | string | — | Phone number |
 
-**Response:** Returns `status: pending_verification` — no `api_token` yet. Verify email first.
+**Response:** Returns `status: pending_verification`. Ask the user to check their email for the 6-digit code, then call `auth_verify_email`.
 
 ---
 
 ### `auth_verify_email`
 
-**Activate a pending account using the verification code from the email link.**
-The code is the last segment of the verification URL, e.g. for `.../email-verification/ABC123XYZ` the code is `ABC123XYZ`.
-Call this after `auth_register` when the user has copied the code from their verification email.
+**Activate account and retrieve API token.**
+Call after `auth_register` once the user shares the 6-digit code from their verification email.
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
-| `verification_code` | string | ✓ | Code from the verification link URL |
-
-**Response:** Returns `api_token` — use this as the Bearer token and reconfigure the MCP connection.
-
----
-
-### `auth_login`
-
-**Retrieve API token for an existing FlowyTeam account.**
-Call only when the user explicitly provides their email and password and requests a login. Also use after the user has clicked the web verification link (Path B of `auth_register`).
-
-| Parameter | Type | Required | Description |
-|---|---|---|---|
-| `email` | string | ✓ | Registered email address |
-| `password` | string | ✓ | Account password |
+| `verification_code` | string | ✓ | 6-digit code from the verification email |
 
 **Response:** Returns `api_token` — use this as the Bearer token and reconfigure the MCP connection.
 
